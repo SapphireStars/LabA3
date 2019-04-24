@@ -1,0 +1,128 @@
+package com.mikeriv.ssui_2016.a2_collage_basecode;
+
+import android.annotation.TargetApi;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.NinePatch;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.BaseVisualElement;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.CircleLayout;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.ColumnLayout;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.IconImage;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.NinePartImage;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.OvalClip;
+import com.mikeriv.ssui_2016.a2_collage_basecode.drawing.VisualElement;
+import com.mikeriv.ssui_2016.a2_collage_basecode.tests.CollageViewTestHelper;
+import com.mikeriv.ssui_2016.a2_collage_basecode.views.CollageView;
+
+import java.nio.ByteBuffer;
+
+public class CollageActivity extends AppCompatActivity {
+
+    public static final String TAG = "SSUI-MOBILE-COLLAGE-TESTS";
+
+    // The toolbar with the settings icon
+    private Toolbar mSupportActionBar;
+    // The container holding out collage view
+    private FrameLayout mCollageFrame;
+    // The host view that holds a reference to our custom view hierarchy
+    private CollageView mCollageView;
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Magic for creating the settings icon/choices
+        setContentView(R.layout.activity_collage);
+        mSupportActionBar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mSupportActionBar);
+
+        // Grab "Frame" then create basic view to hold the collage
+        mCollageFrame = (FrameLayout) findViewById(R.id.frame_collage);
+        if (mCollageFrame != null) {
+            mCollageView = new CollageView(this);
+            mCollageFrame.addView(mCollageView);
+            // TODO create the root visual element of your collage view
+            // using your created BaseVisualElement class and set i
+           Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.bluebutton);
+            if(NinePatch.isNinePatchChunk(bitmap.getNinePatchChunk())) {
+                byte[] buffer = bitmap.getNinePatchChunk();
+                NinePatch patch = new NinePatch(bitmap, buffer);
+//                VisualElement rootVisualElement = new OvalClip(400, 400, 500,500);
+//                rootVisualElement.addChild(new NinePartImage(0,0,500,500,patch));
+//                mCollageView.setChildVisualElement(rootVisualElement);
+//                Bitmap area = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
+//                Canvas canvas = new Canvas(area);
+//                mCollageView.draw(canvas);
+                VisualElement rootVisualElement = new ColumnLayout(40,40,500,500);
+                for(int i=0;i<5;i++)
+                    rootVisualElement.addChild(new NinePartImage(0,0,200,100,patch));
+                mCollageView.setChildVisualElement(rootVisualElement);
+                Canvas canvas = new Canvas();
+                mCollageView.draw(canvas);
+                refreshViewHierarchy();
+            }
+        }
+
+    }
+
+    /**
+     * Gets called every time the user presses the menu button.
+     * Use if your menu is dynamic.
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        // Adds out test options to the menu bar
+        CollageViewTestHelper.createTestMenuItems(menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
+        boolean didHandleAction = CollageViewTestHelper.onTestItemSelected(
+                item,
+                mCollageView,
+                this);
+        if (didHandleAction) {
+            refreshViewHierarchy();
+        }
+        return didHandleAction;
+    }
+
+    /**
+     * Function to put your custom collage into
+     * You may create additional methods like this to test
+     * functionality
+     */
+    private void initCustomCollage() {
+        // TODO: Part 2: Implement a Custom Collage
+
+        // Finish off by refreshing the view Hierarchy
+        refreshViewHierarchy();
+    }
+
+    /**
+     * Helper method to refresh the custom drawing hierarchy
+     */
+    private void refreshViewHierarchy() {
+        if (mCollageView == null) {
+            return;
+        }
+        mCollageView.requestLayout();
+        mCollageView.invalidate();
+    }
+
+}
